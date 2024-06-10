@@ -351,9 +351,11 @@ for sim in range (0,1):
 
         #* Set ODE parameters and initial conditions
         model.set_ODE_param(z0=[z0],x0=x0,dx_dz0=dx_dz0,A=A, auxx=auxx, aux2=aux2)
+        if(chinch>4):
+            epochs=10000
 
         if(chinch==(N_intervalos-1)):
-            history=model.fit(z_train, y_train, batch_size=1, epochs=6000,verbose=1,
+            history=model.fit(z_train, y_train, batch_size=1, epochs=10000,verbose=1,
                         callbacks=checkpoint_callback) #,shuffle=False)
             model.load_weights(f"modelos_agujero_negro/pesos_inter={N_intervalos}_y={y_ini}_N=200_sim={sim}.h5")
             xy_pred=model.predict(z_train)
