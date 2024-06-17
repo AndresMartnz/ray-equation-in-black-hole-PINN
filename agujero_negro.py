@@ -151,7 +151,7 @@ class ODE_2nd(tf.keras.Model):
         return metrics
     
 
-
+#* We load the imput parameters from the .txt
 ruta_ini = 'black_hole_imput.txt'
 with open(ruta_ini, 'r') as archivo:
     for linea in archivo:
@@ -175,6 +175,7 @@ vx0_rk=1/(1.0/(1.0-A/np.sqrt(x0_rk**2+y0_rk**2)))   ; vx_ini=1/(1.0/(1.0-A/np.sq
 vy0_rk = 0.0  ; vy_ini=0.0
 
 
+#* We define the Runge-Kutta
 def f_x(t, x, y, vx, vy):
     #* vx's ODE
     return vx/n_xy(x,y)
@@ -246,7 +247,7 @@ vx_tot.append(vx0_rk)
 vy_tot.append(vy0_rk)
 t_tot.append(t0)
 
-
+#* We compile the runge-kutta
 x_rk=x0_rk; y_rk=y0_rk; vx_rk=vx0_rk; vy_rk=vy0_rk
 for i in range(pasos):
     x_rk, y_rk, vx_rk, vy_rk = runge_kutta_4th_order(t0, x_rk, y_rk, vx_rk, vy_rk, h)
@@ -275,7 +276,7 @@ print('dx_dz(0)=',dx_dz0)
 
 
 
-zmax = 2
+zmax = 2    #range of the prediction function
 salto=int(N_train_max/N_intervalos)
 salto_z=zmax/N_intervalos
 norm=N_train_max
@@ -302,7 +303,7 @@ batch_size = 1
 
 
 #* Stops after certain epochs without improving and safe the best weight
-#! If the simulation ends normally instead of by this callback, the program will take last weights not best
+#! If the simulation ends normally instead of by this callback, the program will take last weights not best, for avoiding this, implement also with chekpoints_callbacks
 callbacks = tf.keras.callbacks.EarlyStopping(monitor='loss',
                                             patience=1000,
                                             restore_best_weights=True)
@@ -351,8 +352,6 @@ for sim in range (0,1):
 
         #* Set ODE parameters and initial conditions
         model.set_ODE_param(z0=[z0],x0=x0,dx_dz0=dx_dz0,A=A, auxx=auxx, aux2=aux2)
-        if(chinch>4):
-            epochs=10000
 
         if(chinch==(N_intervalos-1)):
             history=model.fit(z_train, y_train, batch_size=1, epochs=10000,verbose=1,
@@ -378,7 +377,7 @@ for sim in range (0,1):
 
     error=0
     diff_inter=int(pasos/N_train_max)
-
+    #* We calculate the error in comparation with the Runge-Kutta
     for k in range (N_train_max-2):
         error=error+(x_tot[k*diff_inter]-xy_pred[k,0])**2
         error=error+(y_tot[k*diff_inter]-xy_pred[k,1])**2
