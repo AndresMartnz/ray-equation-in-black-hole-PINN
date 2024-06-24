@@ -32,6 +32,9 @@ class StopTrainingOnLoss(tf.keras.callbacks.Callback):
 
 
     def on_epoch_end(self, epoch, logs=None):
+      '''
+      choose the error the lost have to achieve for the training to stops
+      '''
         current_loss = logs.get('loss')
         if current_loss is not None and current_loss <= self.target_loss:
             print(f"\nReached target loss of {self.target_loss}. Stopping training.")
@@ -94,7 +97,7 @@ class ODE_2nd(tf.keras.Model):
             aux=[0.0,0.0,0.0,0.0]
             aux=tf.reshape(aux,shape=x.shape)
   
-
+            #we have differents orders for the loss who gave us differents results
             #? Original ODE's order
             '''
             lossODE= self.compiled_loss(dx_dz[:,0],x[:,2]/n)\
@@ -113,7 +116,7 @@ class ODE_2nd(tf.keras.Model):
 
             '''
             
-            #? Alternative ODE's order (2)
+            #? Alternative ODE's order (2) the one with the better results
             lossODE= self.compiled_loss(dx_dz[:,0],x[:,2]/n)\
                     +self.compiled_loss(dx_dz[:,1],x[:,3]/n)\
                     +self.compiled_loss(tf.math.pow(r,3)*dx_dz[:,2],-self.A*tf.math.pow(n,2)*x[:,0])*5\
@@ -134,6 +137,7 @@ class ODE_2nd(tf.keras.Model):
         gradients = tape.gradient(loss, self.trainable_weights)
         self.optimizer.apply_gradients(zip(gradients, self.trainable_weights))
         self.compiled_metrics.update_state(x_true, x)
+        #define the metrics you want to control over the training
         metrics={m.name: m.result() for m in self.metrics}
         metrics.pop('mean_squared_error')
         metrics['z']=z
@@ -151,7 +155,7 @@ class ODE_2nd(tf.keras.Model):
         return metrics
     
 
-#* We load the imput parameters from the .txt
+#* We load the imput parameters from an .txt file
 ruta_ini = 'black_hole_imput.txt'
 with open(ruta_ini, 'r') as archivo:
     for linea in archivo:
