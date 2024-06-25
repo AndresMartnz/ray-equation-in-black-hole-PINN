@@ -307,10 +307,10 @@ batch_size = 1
 callbacks = tf.keras.callbacks.EarlyStopping(monitor='loss',
                                             patience=1000,
                                             restore_best_weights=True)
-for sim in range (0,1):
+for sim in range (0,repeats):
     for chinch in range (N_intervalos):
 
-        checkpoint_callback = ModelCheckpoint(filepath=f'modelos_agujero_negro/pesos_inter={N_intervalos}_y={y_ini}_N={N_train_max}_sim={sim}.h5', 
+        checkpoint_callback = ModelCheckpoint(filepath=f'black_hole_models/weights_inter={N_intervalos}_y={y_ini}_N={N_train_max}_sim={sim}.h5', 
                                       monitor='loss', 
                                       save_best_only=True, 
                                       save_weights_only=True, 
@@ -354,9 +354,9 @@ for sim in range (0,1):
         model.set_ODE_param(z0=[z0],x0=x0,dx_dz0=dx_dz0,A=A, auxx=auxx, aux2=aux2)
 
         if(chinch==(N_intervalos-1)):
-            history=model.fit(z_train, y_train, batch_size=1, epochs=10000,verbose=1,
+            history=model.fit(z_train, y_train, batch_size=1, epochs=10,verbose=1,
                         callbacks=checkpoint_callback) #,shuffle=False)
-            model.load_weights(f"modelos_agujero_negro/pesos_inter={N_intervalos}_y={y_ini}_N=200_sim={sim}.h5")
+            model.load_weights(f'black_hole_models/weights_inter={N_intervalos}_y={y_ini}_N={N_train_max}_sim={sim}.h5')
             xy_pred=model.predict(z_train)
 
             
@@ -365,7 +365,7 @@ for sim in range (0,1):
                         #callbacks=[callbacks, stop_on_loss_callback]) #,shuffle=False)
             history=model.fit(z_train, y_train, batch_size=1, epochs=epochs,verbose=1,
                         callbacks=checkpoint_callback) #,shuffle=False)
-            model.load_weights(f"modelos_agujero_negro/pesos_inter={N_intervalos}_y={y_ini}_N=200_sim={sim}.h5")
+            model.load_weights(f'black_hole_models/weights_inter={N_intervalos}_y={y_ini}_N={N_train_max}_sim={sim}.h5')
             xy_pred=model.predict(z_train)
             
         auxx.append(xy_pred[N_train-1])
@@ -387,7 +387,7 @@ for sim in range (0,1):
     print(f"n chinchetas={N_intervalos-1} error={error}")
 
     #* We save the PINN data trajectories
-    ruta_error = f'multiple_agujero_negro/error_chinchetas_y{y_ini}.txt'
+    ruta_error = f'multiple_black_hole/pushpin_error_y{y_ini}.txt'
 
     with open(ruta_error, 'a') as archivo:
         archivo.write(f'{N_intervalos-1}\t{sim}\t{error}\n')
@@ -398,7 +398,7 @@ for sim in range (0,1):
         chincheta_aux.append(l[0])
     
     #* We save the PINN data trajectories
-    ruta_chinchetas = f'multiple_agujero_negro/chinchetas_y0={y_ini}_Ninter={N_intervalos}_rep={sim}.txt'
+    ruta_chinchetas = f'multiple_black_hole/pushpin_y0={y_ini}_Ninter={N_intervalos}_sim={sim}.txt'
 
     with open(ruta_chinchetas, 'w') as archivo:
         for valor1, valor2, valor3, valor4, valor5 in zip(chincheta_aux, chinchetas[:,0], chinchetas[:,1], chinchetas[:,2], chinchetas[:,3]):
