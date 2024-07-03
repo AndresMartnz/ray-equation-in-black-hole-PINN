@@ -32,9 +32,9 @@ class StopTrainingOnLoss(tf.keras.callbacks.Callback):
 
 
     def on_epoch_end(self, epoch, logs=None):
-      '''
-      choose the error the lost have to achieve for the training to stops
-      '''
+        '''
+        choose the error the lost have to achieve for the training to stops
+        '''
         current_loss = logs.get('loss')
         if current_loss is not None and current_loss <= self.target_loss:
             print(f"\nReached target loss of {self.target_loss}. Stopping training.")
@@ -131,7 +131,7 @@ class ODE_2nd(tf.keras.Model):
             #* "Chinchetas" loss
             aux_pred=self(self.aux2, training=False)
             loss=lossODE\
-                +self.compiled_loss(self.auxx,aux_pred)*5
+                +self.compiled_loss(self.auxx,aux_pred)
 
 
         gradients = tape.gradient(loss, self.trainable_weights)
@@ -175,7 +175,7 @@ with open(ruta_ini, 'r') as archivo:
 GM_c2= A/2   #it represents the factor GM/c^2
 x0_rk = x0; x_ini= x0
 y0_rk = y0; y_ini=y0
-vx0_rk=1/(1.0/(1.0-A/np.sqrt(x0_rk**2+y0_rk**2)))   ; vx_ini=1/(1.0/(1.0-A/np.sqrt(x0_rk**2+y0_rk**2)))
+vx0_rk=1   ; vx_ini=1
 vy0_rk = 0.0  ; vy_ini=0.0
 
 
