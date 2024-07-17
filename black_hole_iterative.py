@@ -174,7 +174,24 @@ with open(ruta_ini, "r") as archivo:
 GM_c2= A/2   #it represents the factor GM/c^2
 x0_rk = x0;    x_ini= x0
 y0_rk = y0;    y_ini=y0
-vx0_rk =  1;   vx_ini=1
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+vx0_rk=1/(1.0/(1.0-A/np.sqrt(x0_rk**2+y0_rk**2)))   ; vx_ini=1/(1.0/(1.0-A/np.sqrt(x0_rk**2+y0_rk**2))) 
 vy0_rk = 0.0;  vy_ini=0.0
 
 
@@ -366,7 +383,7 @@ for sim in range(0, repeats):
                 z_train,
                 y_train,
                 batch_size=1,
-                epochs=10,
+                epochs=epochs,
                 verbose=1,
                 callbacks=checkpoint_callback,
             )  # ,shuffle=False)
