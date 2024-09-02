@@ -366,7 +366,7 @@ for sim in range(0, repeats):
                 z_train,
                 y_train,
                 batch_size=1,
-                epochs=10,
+                epochs=10000,
                 verbose=1,
                 callbacks=checkpoint_callback,
             )  # ,shuffle=False)
@@ -409,7 +409,7 @@ for sim in range(0, repeats):
 
     print(f"n chinchetas={N_intervalos-1} error={error}")
 
-    # * We save the PINN data trajectories
+    # * We save the error in comparison to the Runge Kutta
     ruta_error = f"multiple_black_hole/pushpin_error_y{y_ini}.txt"
 
     with open(ruta_error, "a") as archivo:
