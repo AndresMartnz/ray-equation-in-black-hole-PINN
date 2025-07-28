@@ -7,6 +7,7 @@ import keras as k
 import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
+
 # import tensorflow.keras as k2
 from keras.layers import Dense, Input
 from keras.models import load_model, save_model
@@ -65,9 +66,9 @@ class ODE_2nd(tf.keras.Model):
         self.aux2 = tf.constant(aux2, dtype=tf.float32)
 
     def train_step(self, data):
-        '''
+        """
         Training ocurrs here
-        '''
+        """
         z, x_true = data
         with tf.GradientTape() as tape:
             # * Initial conditions
@@ -94,21 +95,21 @@ class ODE_2nd(tf.keras.Model):
             tape.watch(dx_dz)
 
             # * Definition of r and n
-            r=tf.math.sqrt(x[:,0]**2+x[:,1]**2)
-            n=1.0/(1.0-self.A/r)
-            aux=[0.0,0.0,0.0,0.0]
-            aux=tf.reshape(aux,shape=x.shape)
+            r = tf.math.sqrt(x[:, 0] ** 2 + x[:, 1] ** 2)
+            n = 1.0 / (1.0 - self.A / r)
+            aux = [0.0, 0.0, 0.0, 0.0]
+            aux = tf.reshape(aux, shape=x.shape)
 
             # we have differents orders for the loss who gave us differents results
             # ? Original ODE's order
-            '''
+            """
             lossODE= self.compiled_loss(dx_dz[:,0],x[:,2]/n)\
                     +self.compiled_loss(dx_dz[:,1],x[:,3]/n)\
                     +self.compiled_loss(dx_dz[:,2],-self.A*tf.math.pow(n,2)*x[:,0]/tf.math.pow(r,3))\
                     +self.compiled_loss(dx_dz[:,3],-self.A*tf.math.pow(n,2)*x[:,1]/tf.math.pow(r,3))
 
-            '''
-            '''
+            """
+            """
             #? Alternative ODE's order (1)
             lossODE= self.compiled_loss(n*dx_dz[:,0],x[:,2])\
                     +self.compiled_loss(n*dx_dz[:,1],x[:,3])\
@@ -116,22 +117,29 @@ class ODE_2nd(tf.keras.Model):
                     +self.compiled_loss(tf.math.pow(r,3)*dx_dz[:,3]/tf.math.pow(n,2),-self.A*x[:,1])
                     #+self.compiled_loss(A/tf.math.pow((x[:,0]*x[:,0]+x[:,1]*x[:,1]),0.5),aux[:,0])
 
-            '''
+            """
 
             # ? Alternative ODE's order (2) the one with the better results
-            lossODE= self.compiled_loss(dx_dz[:,0],x[:,2]/n)\
-                    +self.compiled_loss(dx_dz[:,1],x[:,3]/n)\
-                    +self.compiled_loss(tf.math.pow(r,3)*dx_dz[:,2],-self.A*tf.math.pow(n,2)*x[:,0])*5\
-                    +self.compiled_loss(tf.math.pow(r,3)*dx_dz[:,3],-self.A*tf.math.pow(n,2)*x[:,1])*10
+            lossODE = (
+                self.compiled_loss(dx_dz[:, 0], x[:, 2] / n)
+                + self.compiled_loss(dx_dz[:, 1], x[:, 3] / n)
+                + self.compiled_loss(
+                    tf.math.pow(r, 3) * dx_dz[:, 2],
+                    -self.A * tf.math.pow(n, 2) * x[:, 0],
+                )
+                * 5
+                + self.compiled_loss(
+                    tf.math.pow(r, 3) * dx_dz[:, 3],
+                    -self.A * tf.math.pow(n, 2) * x[:, 1],
+                )
+                * 10
+            )
 
             # * initial condition loss
-            lossODE= lossODE\
-                  + self.compiled_loss(x0_pred,self.x0_true) \
-                  
+            lossODE = lossODE + self.compiled_loss(x0_pred, self.x0_true)
             # * "Chinchetas" loss
-            aux_pred=self(self.aux2, training=False)
-            loss=lossODE\
-                +self.compiled_loss(self.auxx,aux_pred)
+            aux_pred = self(self.aux2, training=False)
+            loss = lossODE + self.compiled_loss(self.auxx, aux_pred)
 
         gradients = tape.gradient(loss, self.trainable_weights)
         self.optimizer.apply_gradients(zip(gradients, self.trainable_weights))
@@ -154,8 +162,8 @@ class ODE_2nd(tf.keras.Model):
         return metrics
 
 
-# * We load the imput parameters from an .txt file
-ruta_ini = "black_hole_imput.txt"
+# * We load the input parameters from an .txt file
+ruta_ini = "black_hole_input.txt"
 with open(ruta_ini, "r") as archivo:
     for linea in archivo:
 
@@ -171,28 +179,17 @@ with open(ruta_ini, "r") as archivo:
 
 
 # it represents the factor 2GM/c^2
-GM_c2= A/2   #it represents the factor GM/c^2
-x0_rk = x0;    x_ini= x0
-y0_rk = y0;    y_ini=y0
+GM_c2 = A / 2  # it represents the factor GM/c^2
+x0_rk = x0
+x_ini = x0
+y0_rk = y0
+y_ini = y0
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-vx0_rk=1/(1.0/(1.0-A/np.sqrt(x0_rk**2+y0_rk**2)))   ; vx_ini=1/(1.0/(1.0-A/np.sqrt(x0_rk**2+y0_rk**2))) 
-vy0_rk = 0.0;  vy_ini=0.0
+vx0_rk = 1 / (1.0 / (1.0 - A / np.sqrt(x0_rk**2 + y0_rk**2)))
+vx_ini = 1 / (1.0 / (1.0 - A / np.sqrt(x0_rk**2 + y0_rk**2)))
+vy0_rk = 0.0
+vy_ini = 0.0
 
 
 # * We define the Runge-Kutta
@@ -229,27 +226,44 @@ def runge_kutta_4th_order(t, x, y, vx, vy, h):
     k1_vx = h * g_x(t, x, y, vx, vy)
     k1_vy = h * g_y(t, x, y, vx, vy)
 
-    k2_x = h * f_x(t + 0.5 * h, x + 0.5 * k1_x, y + 0.5 * k1_y, vx + 0.5 * k1_vx, vy + 0.5 * k1_vy)
-    k2_y = h * f_y(t + 0.5 * h, x + 0.5 * k1_x, y + 0.5 * k1_y, vx + 0.5 * k1_vx, vy + 0.5 * k1_vy)
-    k2_vx = h * g_x(t + 0.5 * h, x + 0.5 * k1_x, y + 0.5 * k1_y, vx + 0.5 * k1_vx, vy + 0.5 * k1_vy)
-    k2_vy = h * g_y(t + 0.5 * h, x + 0.5 * k1_x, y + 0.5 * k1_y, vx + 0.5 * k1_vx, vy + 0.5 * k1_vy)
+    k2_x = h * f_x(
+        t + 0.5 * h, x + 0.5 * k1_x, y + 0.5 * k1_y, vx + 0.5 * k1_vx, vy + 0.5 * k1_vy
+    )
+    k2_y = h * f_y(
+        t + 0.5 * h, x + 0.5 * k1_x, y + 0.5 * k1_y, vx + 0.5 * k1_vx, vy + 0.5 * k1_vy
+    )
+    k2_vx = h * g_x(
+        t + 0.5 * h, x + 0.5 * k1_x, y + 0.5 * k1_y, vx + 0.5 * k1_vx, vy + 0.5 * k1_vy
+    )
+    k2_vy = h * g_y(
+        t + 0.5 * h, x + 0.5 * k1_x, y + 0.5 * k1_y, vx + 0.5 * k1_vx, vy + 0.5 * k1_vy
+    )
 
-    k3_x = h * f_x(t + 0.5 * h, x + 0.5 * k2_x, y + 0.5 * k2_y, vx + 0.5 * k2_vx, vy + 0.5 * k2_vy)
-    k3_y = h * f_y(t + 0.5 * h, x + 0.5 * k2_x, y + 0.5 * k2_y, vx + 0.5 * k2_vx, vy + 0.5 * k2_vy)
-    k3_vx = h * g_x(t + 0.5 * h, x + 0.5 * k2_x, y + 0.5 * k2_y, vx + 0.5 * k2_vx, vy + 0.5 * k2_vy)
-    k3_vy = h * g_y(t + 0.5 * h, x + 0.5 * k2_x, y + 0.5 * k2_y, vx + 0.5 * k2_vx, vy + 0.5 * k2_vy)
+    k3_x = h * f_x(
+        t + 0.5 * h, x + 0.5 * k2_x, y + 0.5 * k2_y, vx + 0.5 * k2_vx, vy + 0.5 * k2_vy
+    )
+    k3_y = h * f_y(
+        t + 0.5 * h, x + 0.5 * k2_x, y + 0.5 * k2_y, vx + 0.5 * k2_vx, vy + 0.5 * k2_vy
+    )
+    k3_vx = h * g_x(
+        t + 0.5 * h, x + 0.5 * k2_x, y + 0.5 * k2_y, vx + 0.5 * k2_vx, vy + 0.5 * k2_vy
+    )
+    k3_vy = h * g_y(
+        t + 0.5 * h, x + 0.5 * k2_x, y + 0.5 * k2_y, vx + 0.5 * k2_vx, vy + 0.5 * k2_vy
+    )
 
     k4_x = h * f_x(t + h, x + k3_x, y + k3_y, vx + k3_vx, vy + k3_vy)
     k4_y = h * f_y(t + h, x + k3_x, y + k3_y, vx + k3_vx, vy + k3_vy)
     k4_vx = h * g_x(t + h, x + k3_x, y + k3_y, vx + k3_vx, vy + k3_vy)
     k4_vy = h * g_y(t + h, x + k3_x, y + k3_y, vx + k3_vx, vy + k3_vy)
 
-    new_x = x + (1/6) * (k1_x + 2 * k2_x + 2 * k3_x + k4_x)
-    new_y = y + (1/6) * (k1_y + 2 * k2_y + 2 * k3_y + k4_y)
-    new_vx = vx + (1/6) * (k1_vx + 2 * k2_vx + 2 * k3_vx + k4_vx)
-    new_vy = vy + (1/6) * (k1_vy + 2 * k2_vy + 2 * k3_vy + k4_vy)
+    new_x = x + (1 / 6) * (k1_x + 2 * k2_x + 2 * k3_x + k4_x)
+    new_y = y + (1 / 6) * (k1_y + 2 * k2_y + 2 * k3_y + k4_y)
+    new_vx = vx + (1 / 6) * (k1_vx + 2 * k2_vx + 2 * k3_vx + k4_vx)
+    new_vy = vy + (1 / 6) * (k1_vy + 2 * k2_vy + 2 * k3_vy + k4_vy)
 
     return new_x, new_y, new_vx, new_vy
+
 
 # * RK's initial conditions
 
@@ -353,10 +367,12 @@ for sim in range(0, repeats):
         x = Dense(500, activation=activation, kernel_initializer=initializer)(x)
         x = Dense(500, activation=activation, kernel_initializer=initializer)(x)
         x = Dense(500, activation=activation, kernel_initializer=initializer)(x)
-        output = Dense(output_neurons, kernel_initializer=initializer, activation=None)(x)
+        output = Dense(output_neurons, kernel_initializer=initializer, activation=None)(
+            x
+        )
 
         # * Build the model
-        model=ODE_2nd(input,output)
+        model = ODE_2nd(input, output)
 
         # *Define the metrics, optimizer and loss
         loss = tf.keras.losses.MeanSquaredError()
